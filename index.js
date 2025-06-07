@@ -126,7 +126,7 @@ function obtemIntervalosAdicionais() {
     return listaDeIntervalosAdicionais;
 }
 
-function validaCampos() {
+function existeCampoValorInvalido() {
     const horaInicioJornada = document.querySelector("#inicio_jornada");
     const horaInicioIntervaloPrincipal = document.querySelector("#inicio_intervalo_principal");
     const horaFinalIntervaloPrincipal = document.querySelector("#final_intervalo_principal");
@@ -140,7 +140,13 @@ function validaCampos() {
     ];
 
     let temCampoInvalido = false
-
+     
+    listaDeCamposParaValidar.forEach((campo) => {
+        const labelValidaCampoJaExistente = document.querySelector("#" + "valida_" + campo.id)
+         labelValidaCampoJaExistente.textContent = "" 
+           labelValidaCampoJaExistente.style.display = "none" 
+    }); 
+/* 
     listaDeCamposParaValidar.forEach((campo, index) => {
         const labelValidaCampoJaExistente = document.querySelector("#" + "valida_" + campo.id)
         if (!campo.value || campo.value === "00:00") {
@@ -151,40 +157,69 @@ function validaCampos() {
             labelValidaCampoJaExistente.textContent = "" 
            labelValidaCampoJaExistente.style.display = "none" 
         }
-    });
+    }); */
 
-    const inicioJornadaEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaInicioJornada.value)
-    const inicioIntervaloPrincipalEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaInicioIntervaloPrincipal.value)
-    const finalIntervaloPrincipalEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaFinalIntervaloPrincipal.value)
-    const finalJornadaEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaFinalJornada.value)
+    const inicioJornadaEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaInicioJornada.value || "00:00")
+    const inicioIntervaloPrincipalEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaInicioIntervaloPrincipal.value || "00:00")
+    const finalIntervaloPrincipalEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaFinalIntervaloPrincipal.value || "00:00")
+    const finalJornadaEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaFinalJornada.value || "00:00")
 
-    console.log("inicioIntervaloPrincipalEmMinutos = " + inicioIntervaloPrincipalEmMinutos)
-    console.log("inicioJornadaEmMinutos = " + inicioJornadaEmMinutos)
-    console.log("inicioIntervaloPrincipalEmMinutos <= inicioJornadaEmMinutos =" + (inicioIntervaloPrincipalEmMinutos <= inicioJornadaEmMinutos))
-    if(inicioIntervaloPrincipalEmMinutos <= inicioJornadaEmMinutos){
+     if(inicioIntervaloPrincipalEmMinutos > 0 && inicioIntervaloPrincipalEmMinutos <= inicioJornadaEmMinutos){
         const label = document.querySelector("#valida_" + horaInicioIntervaloPrincipal.id)
-        label.textContent = "Hora início intervalo tem que ser maior que hora início da jornada!"
+        label.textContent = "Se houve intervalo, a hora início intervalo tem que ser maior que hora início da jornada!"
         label.style.display = "inline"
         temCampoInvalido = true
-    }else if(finalIntervaloPrincipalEmMinutos <= inicioIntervaloPrincipalEmMinutos){
-        const label = document.querySelector("#valida_" + horaFinalIntervaloPrincipal.id)
-        label.textContent = "Hora final intervalo tem que ser maior que hora início intervalo!"
-        label.style.display = "inline"
-        temCampoInvalido = true
-    }else if(finalJornadaEmMinutos <= finalIntervaloPrincipalEmMinutos){
-        const label = document.querySelector("#valida_" + horaFinalJornada.id)
-        label.textContent = "Hora final da jornada tem que ser maior que hora final intervalo!"
-        label.style.display = "inline"
-        temCampoInvalido = true
-    }else{
-        temCampoInvalido = false
     }
+
+    if(inicioIntervaloPrincipalEmMinutos > 0 && finalIntervaloPrincipalEmMinutos == 0){
+        const label = document.querySelector("#valida_" + horaFinalIntervaloPrincipal.id)
+        label.textContent = "Se houve intervalo, a hora final do intervalo precisa ser informada e tem que ser maior que hora início da jornada!"
+        label.style.display = "inline"
+        temCampoInvalido = true
+    }
+
+    if(finalIntervaloPrincipalEmMinutos > 0 && inicioIntervaloPrincipalEmMinutos == 0){
+        const label = document.querySelector("#valida_" + horaInicioIntervaloPrincipal.id)
+        label.textContent = "Se houve intervalo, a hora final do intervalo precisa ser informada e tem que ser maior que hora início da jornada!"
+        label.style.display = "inline"
+        temCampoInvalido = true
+    }
+        
+    if(finalIntervaloPrincipalEmMinutos > 0 && finalIntervaloPrincipalEmMinutos <= inicioIntervaloPrincipalEmMinutos){
+        const label = document.querySelector("#valida_" + horaFinalIntervaloPrincipal.id)
+        label.textContent = "Se houve intervalo, a hora final intervalo tem que ser maior que hora início intervalo!"
+        label.style.display = "inline"
+        temCampoInvalido = true
+    }
+    
+    if(finalJornadaEmMinutos <= inicioJornadaEmMinutos){
+        const label = document.querySelector("#valida_" + horaFinalJornada.id)
+        label.textContent = "Hora final da jornada tem que ser maior que hora início da jornada!"
+        label.style.display = "inline"
+        temCampoInvalido = true
+    }
+
+    const totalMinutosIntervaloPrincipal = jornada._totalMinutosDeIntervalo()
+    const horasEMinutosTrabalhadas = jornada.calcularHorasTrabalhadas()
+    const totalMinutosTrabalhados = JornadaDeTrabalho._horaParaMinutos(horasEMinutosTrabalhadas.horas + ":" + horasEMinutosTrabalhadas.minutos)
+    const resultado = document.querySelector("#resultado")
+    if(totalMinutosTrabalhados > 251 && totalMinutosTrabalhados < 371 && totalMinutosIntervaloPrincipal < 15){
+        resultado.textContent = "Você trabalhou " + totalMinutosTrabalhados + " minutos, portanto precisa fazer pelo menos 15 minutos de intervalo!"
+        temCampoInvalido = true
+    }else if(totalMinutosTrabalhados >= 371 && totalMinutosIntervaloPrincipal < 60){
+        resultado.textContent = "Você trabalhou " + totalMinutosTrabalhados + " minutos, portanto previsa fazer pelo menos 60 minutos de intervalo!"
+        temCampoInvalido = true
+    }
+
+
+
     return temCampoInvalido; 
 }
 
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("carregado")
     const botaoAdicionarIntervalo = document.querySelector("#botao_adicionar_intervalo");
     if (botaoAdicionarIntervalo) {
         botaoAdicionarIntervalo.addEventListener("click", adicionaIntervaloAdicional);
@@ -193,19 +228,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const botaoCalcular = document.querySelector("#calcular_jornada");
     if (botaoCalcular) {
         botaoCalcular.addEventListener('click', () => {
+            jornada.horaInicioJornada = document.querySelector("#inicio_jornada").value;
+            jornada.horaFimJornada = document.querySelector("#fim_jornada").value;
+            jornada.horaInicioIntervaloPrincipal = document.querySelector("#inicio_intervalo_principal").value || "00:00";
+            jornada.horaFimIntervaloPrincipal = document.querySelector("#final_intervalo_principal").value || "00:00";;
+            jornada.listaDeIntervalosAdicionais = obtemIntervalosAdicionais();
             const resultado = document.querySelector("#resultado")
             resultado.innerHTML = ""
-            if (!validaCampos()) {
+            if (existeCampoValorInvalido()) {
                 return; 
             }
 
-            jornada.horaInicioJornada = document.querySelector("#inicio_jornada").value;
-            jornada.horaFimJornada = document.querySelector("#fim_jornada").value;
-            jornada.horaInicioIntervaloPrincipal = document.querySelector("#inicio_intervalo_principal").value;
-            jornada.horaFimIntervaloPrincipal = document.querySelector("#final_intervalo_principal").value;
-            jornada.listaDeIntervalosAdicionais = obtemIntervalosAdicionais();
+            
 
             const calculo = jornada.calcularHorasTrabalhadas();
+            console.log(calculo)
             resultado.innerHTML = `${calculo.horas}h ${calculo.minutos}m`;
         });
     }
