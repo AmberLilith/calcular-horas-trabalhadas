@@ -1,67 +1,3 @@
-class JornadaDeTrabalho {
-    constructor(
-        horaInicioJornada,
-        horaFimJornada,
-        horaInicioIntervaloPrincipal,
-        horaFimIntervaloPrincipal,
-        listaDeIntervalosAdicionais = []
-    ) {
-        this.horaInicioJornada = horaInicioJornada;
-        this.horaFimJornada = horaFimJornada;
-        this.horaInicioIntervaloPrincipal = horaInicioIntervaloPrincipal;
-        this.horaFimIntervaloPrincipal = horaFimIntervaloPrincipal;
-        this.listaDeIntervalosAdicionais = listaDeIntervalosAdicionais;
-    }
-
-    static _horaParaMinutos(horaStr) {
-        const [h, m] = horaStr.split(':').map(Number);
-        return h * 60 + m;
-    }
-
-    static _diferencaEmMinutos(horaInicio, horaFim) {
-        let minutosInicio = JornadaDeTrabalho._horaParaMinutos(horaInicio);
-        let minutosFim = JornadaDeTrabalho._horaParaMinutos(horaFim);
-
-        if (minutosFim < minutosInicio) {
-            minutosFim += 24 * 60; 
-        }
-        return minutosFim - minutosInicio;
-    }
-
-    _totalMinutosDeIntervalo() {
-        let total = JornadaDeTrabalho._diferencaEmMinutos(
-            this.horaInicioIntervaloPrincipal,
-            this.horaFimIntervaloPrincipal
-        );
-
-        for (const intervalo of this.listaDeIntervalosAdicionais) {
-            total += JornadaDeTrabalho._diferencaEmMinutos(intervalo.inicio, intervalo.final);
-        }
-
-        return total;
-    }
-
-    calcularHorasTrabalhadas() {
-        const minutosJornada = JornadaDeTrabalho._diferencaEmMinutos(
-            this.horaInicioJornada,
-            this.horaFimJornada
-        );
-
-        const minutosIntervalo = this._totalMinutosDeIntervalo();
-        const minutosTrabalhados = minutosJornada - minutosIntervalo;
-
-        
-        if (minutosTrabalhados < 0) {
-            return { horas: 0, minutos: 0 };
-        }
-
-        return {
-            horas: Math.floor(minutosTrabalhados / 60),
-            minutos: minutosTrabalhados % 60
-        };
-    }
-}
-
 const jornada = new JornadaDeTrabalho();
 let qtddIntervalosAdicionais = 0;
 
@@ -146,18 +82,6 @@ function existeCampoValorInvalido() {
          labelValidaCampoJaExistente.textContent = "" 
            labelValidaCampoJaExistente.style.display = "none" 
     }); 
-/* 
-    listaDeCamposParaValidar.forEach((campo, index) => {
-        const labelValidaCampoJaExistente = document.querySelector("#" + "valida_" + campo.id)
-        if (!campo.value || campo.value === "00:00") {
-            labelValidaCampoJaExistente.textContent = document.querySelector(`label[for="${campo.id}"]`).textContent + " é inválido!"   
-            labelValidaCampoJaExistente.style.display = "inline"         
-            temCampoInvalido = true
-        }else{
-            labelValidaCampoJaExistente.textContent = "" 
-           labelValidaCampoJaExistente.style.display = "none" 
-        }
-    }); */
 
     const inicioJornadaEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaInicioJornada.value || "00:00")
     const inicioIntervaloPrincipalEmMinutos = JornadaDeTrabalho._horaParaMinutos(horaInicioIntervaloPrincipal.value || "00:00")
@@ -180,7 +104,7 @@ function existeCampoValorInvalido() {
 
     if(finalIntervaloPrincipalEmMinutos > 0 && inicioIntervaloPrincipalEmMinutos == 0){
         const label = document.querySelector("#valida_" + horaInicioIntervaloPrincipal.id)
-        label.textContent = "Se houve intervalo, a hora final do intervalo precisa ser informada e tem que ser maior que hora início da jornada!"
+        label.textContent = "Se houve intervalo, a hora início do intervalo precisa ser informada e tem que ser maior que hora início da jornada!!"
         label.style.display = "inline"
         temCampoInvalido = true
     }
@@ -188,6 +112,13 @@ function existeCampoValorInvalido() {
     if(finalIntervaloPrincipalEmMinutos > 0 && finalIntervaloPrincipalEmMinutos <= inicioIntervaloPrincipalEmMinutos){
         const label = document.querySelector("#valida_" + horaFinalIntervaloPrincipal.id)
         label.textContent = "Se houve intervalo, a hora final intervalo tem que ser maior que hora início intervalo!"
+        label.style.display = "inline"
+        temCampoInvalido = true
+    }
+
+    if(finalIntervaloPrincipalEmMinutos > 0 && finalJornadaEmMinutos <= finalIntervaloPrincipalEmMinutos){
+        const label = document.querySelector("#valida_" + horaFinalJornada.id)
+        label.textContent = "Hora final da jornada tem que ser maior que hora final intervalo!"
         label.style.display = "inline"
         temCampoInvalido = true
     }
@@ -203,11 +134,12 @@ function existeCampoValorInvalido() {
     const horasEMinutosTrabalhadas = jornada.calcularHorasTrabalhadas()
     const totalMinutosTrabalhados = JornadaDeTrabalho._horaParaMinutos(horasEMinutosTrabalhadas.horas + ":" + horasEMinutosTrabalhadas.minutos)
     const resultado = document.querySelector("#resultado")
+    const minutosEmHoras = JornadaDeTrabalho.minutosParaHora(totalMinutosTrabalhados)
     if(totalMinutosTrabalhados > 251 && totalMinutosTrabalhados < 371 && totalMinutosIntervaloPrincipal < 15){
-        resultado.textContent = "Você trabalhou " + totalMinutosTrabalhados + " minutos, portanto precisa fazer pelo menos 15 minutos de intervalo!"
+        resultado.textContent = "Você trabalhou " + minutosEmHoras + " minutos, portanto precisa fazer pelo menos 15 minutos de intervalo!"
         temCampoInvalido = true
     }else if(totalMinutosTrabalhados >= 371 && totalMinutosIntervaloPrincipal < 60){
-        resultado.textContent = "Você trabalhou " + totalMinutosTrabalhados + " minutos, portanto previsa fazer pelo menos 60 minutos de intervalo!"
+        resultado.textContent = "Você trabalhou " + minutosEmHoras + " minutos, portanto previsa fazer pelo menos 60 minutos de intervalo!"
         temCampoInvalido = true
     }
 
@@ -215,8 +147,6 @@ function existeCampoValorInvalido() {
 
     return temCampoInvalido; 
 }
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("carregado")
