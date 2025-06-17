@@ -1,77 +1,53 @@
-class JornadaDeTrabalho {
+class JornadaDeTrabalho{
     constructor(
         horaInicioJornada,
         horaFimJornada,
-        horaInicioIntervaloPrincipal,
-        horaFimIntervaloPrincipal,
+        horaInicioIntervaloObrigatorio,
+        horaFimIntervaloObrigatorio,
         listaDeIntervalosAdicionais = []
     ) {
         this.horaInicioJornada = horaInicioJornada;
         this.horaFimJornada = horaFimJornada;
-        this.horaInicioIntervaloPrincipal = horaInicioIntervaloPrincipal;
-        this.horaFimIntervaloPrincipal = horaFimIntervaloPrincipal;
+        this.horaInicioIntervaloObrigatorio = horaInicioIntervaloObrigatorio;
+        this.horaFimIntervaloObrigatorio = horaFimIntervaloObrigatorio;
         this.listaDeIntervalosAdicionais = listaDeIntervalosAdicionais;
     }
 
-    static _horaParaMinutos(horaStr) {
-        const [h, m] = horaStr.split(':').map(Number);
-        return h * 60 + m;
+    dataParaTimestamp(dataRecebida){
+        if(!dataRecebida){
+            return 0;
+        }
+        const data = new Date(dataRecebida);
+        return data.getTime();
     }
 
-    static minutosParaHora(horaEmMinutos) {
-    const horas = Math.floor(horaEmMinutos / 60); 
-    const minutos = horaEmMinutos % 60;          
-
-    const horasFormatadas = String(horas).padStart(2, '0');
-    const minutosFormatados = String(minutos).padStart(2, '0');
-    
-    return `${horasFormatadas}:${minutosFormatados}`;
-}
-
-    static _diferencaEmMinutos(horaInicio, horaFim) {
-        let minutosInicio = JornadaDeTrabalho._horaParaMinutos(horaInicio);
-        let minutosFim = JornadaDeTrabalho._horaParaMinutos(horaFim);
-
-        if (minutosFim < minutosInicio) {
-            minutosFim += 24 * 60; 
-        }
-        return minutosFim - minutosInicio;
+    diferencaEntreHorasEmMinutos(horaInicio, horaFim){ //hora no formato "ano-mes-diaThora:minuto:segundos". Exemplo: "2025-06-08T22:40:00"
+        const timestampInicio = this.dataParaTimestamp(horaInicio);
+        const timestampFim = this.dataParaTimestamp(horaFim);
+        return (timestampFim - timestampInicio) / 1000 / 60;
     }
 
-    _totalMinutosDeIntervalo() {
-        let total = JornadaDeTrabalho._diferencaEmMinutos(
-            this.horaInicioIntervaloPrincipal,
-            this.horaFimIntervaloPrincipal
-        );
-
-        for (const intervalo of this.listaDeIntervalosAdicionais) {
-            total += JornadaDeTrabalho._diferencaEmMinutos(intervalo.inicio, intervalo.final);
+    caclulaTotalIntervalosAdicionais(){
+        let total = 0;
+        for(let intervalo of this.listaDeIntervalosAdicionais){
+            total += this.diferencaEntreHorasEmMinutos(intervalo.inicio, intervalo.fim);
         }
-
         return total;
     }
 
-    calcularHorasTrabalhadas() {
-        const minutosJornada = JornadaDeTrabalho._diferencaEmMinutos(
-            this.horaInicioJornada,
-            this.horaFimJornada
-        );
+    MinutosEmHoras(minutos){
+        return `${ Math.floor(minutos / 60).toString().padStart(2,"0")}:${(minutos % 60).toString().padStart(2,"0")}`
+    }
 
-        const minutosIntervalo = this._totalMinutosDeIntervalo();
-        const minutosTrabalhados = minutosJornada - minutosIntervalo;
-
-        
-        if (minutosTrabalhados < 0) {
-            return { horas: 0, minutos: 0 };
-        }
-
+    calculaJornada(){
+        const totalJornada = this.diferencaEntreHorasEmMinutos(this.horaInicioJornada, this.horaFimJornada);
+        const totalIntervaloObrigatorio = this.diferencaEntreHorasEmMinutos(this.horaInicioIntervaloObrigatorio, this.horaFimIntervaloObrigatorio);
+        const totalIntervalosAdicionais = this.caclulaTotalIntervalosAdicionais();
+        const minutosTrabalhados = (totalJornada - totalIntervaloObrigatorio - totalIntervalosAdicionais)
         return {
             horas: Math.floor(minutosTrabalhados / 60),
             minutos: minutosTrabalhados % 60
-        };
-    }
-
-    exibeHorasTrabalhadas(elementoParaExibirHorasTrabalhadas){
-        
+        }
     }
 }
+

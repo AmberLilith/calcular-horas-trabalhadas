@@ -15,39 +15,42 @@
         <header class="mt-3">
             <h1>Cálculo de Horas Trabalhadas</h1>
         </header>
-        <div class="row border m-1 pt-2 pb-2 rounded">
+        <div id="div_horarios_obrigatorios" class="row border m-1 pt-2 pb-2 rounded">
             <h3>Horários da Jornada</h3>
             <div class="col-12 col-md">
-                <label for="inicio_jornada">Hora Início Jornada</label>
-                <input type="time" name="inicio_jornada" id="inicio_jornada" class="form-control">
-                <label id="valida_inicio_jornada" style="color: red;display: none;">(Inválido)</label>
+                <label for="input_inicio_jornada">Hora Início Jornada</label>
+                <input type="datetime-local" name="input_inicio_jornada" id="input_inicio_jornada" class="form-control">
+                <label id="valida_input_inicio_jornada" class="d-none text-danger">(Inválido)</label>
             </div>
             <div class="col-12 col-md">
-                <label for="inicio_intervalo_principal">Hora Início Intervalo</label> 
-                <input type="time" name="inicio_intervalo" id="inicio_intervalo_principal" class="form-control">
-                <label id="valida_inicio_intervalo_principal" style="color: red;display: none;">(Inválido)</label>
+                <label for="input_inicio_intervalo_obrigatorio">Hora Início Intervalo</label> 
+                <input type="datetime-local" name="input_inicio_intervalo" id="input_inicio_intervalo_obrigatorio" class="form-control">
+                <label id="valida_input_inicio_intervalo_obrigatorio" class="d-none text-danger">(Inválido)</label>
             </div>
             <div class="col-12 col-md">
-                <label for="final_intervalo_principal">Hora Fim Intervalo</label>
-                <input type="time" name="final_intervalo" id="final_intervalo_principal" class="form-control">
-                <label id="valida_final_intervalo_principal" style="color: red;display: none;">(Inválido)</label>
+                <label for="input_fim_intervalo_obrigatorio">Hora Fim Intervalo</label>
+                <input type="datetime-local" name="inputa_fim_intervalo" id="input_fim_intervalo_obrigatorio" class="form-control">
+                <label id="valida_input_fim_intervalo_obrigatorio" class="d-none text-danger">(Inválido)</label>
             </div>
             <div class="col-12 col-md">
-                <label for="fim_jornada">Hora Fim Jornada</label>
-                <input type="time" name="fim_jornada" id="fim_jornada" class="form-control">
-                <label id="valida_fim_jornada" style="color: red;display: none;">(Inválido)</label>
+                <label for="input_fim_jornada">Hora Fim Jornada</label>
+                <input type="datetime-local" name="hora_fim_jornada" id="input_fim_jornada" class="form-control">
+                <label id="valida_input_fim_jornada" class="d-none text-danger">(Inválido)</label>
             </div>
         </div>
 
         <br>
 
-        <div id="horarios_adicionais" class="row text-center border m-1 pt-2 pb-2 rounded">
+        <div id="div_horarios_adicionais" class=" border rounded">
             <h4 class="text-center">Intervalos Adicionais</h4>
-            <div class="col-12 col-md-4"></div> 
+            <div class="row text-center">
+                <div class="col-12 col-md-4"></div> 
             <div class="col-12 col-md-4"></div>
             <div class="col-12 col-md-4">
                 <button id="botao_adicionar_intervalo" class="btn btn-primary w-100">Adicionar Intervalo</button>
             </div>
+            </div>
+            
         </div>
 
         <div class="row pt-2 pb-2 text-center align-items-center">
