@@ -39,6 +39,14 @@ class JornadaDeTrabalho{
         return `${ Math.floor(minutos / 60).toString().padStart(2,"0")}:${(minutos % 60).toString().padStart(2,"0")}`
     }
 
+    obtemTotalIntervalosAdicionais(){
+        let total = 0;
+        this.listaDeIntervalosAdicionais.forEach(intervalo => {
+            total += (new Date(intervalo.fim).getTime() - new Date(intervalo.inicio).getTime()) / 1000 / 60;
+        });
+        return total;
+    }
+
     calculaJornada(){
         const totalJornada = this.diferencaEntreHorasEmMinutos(this.horaInicioJornada, this.horaFimJornada);
         const totalIntervaloObrigatorio = this.diferencaEntreHorasEmMinutos(this.horaInicioIntervaloObrigatorio, this.horaFimIntervaloObrigatorio);
